@@ -1,1 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PPT Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #1e1e2f, #3b3b5f);
+            color: #eaeaea;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: auto;
+            position: relative;
+        }
+
+        /* Gambar Bulan di Pojok */
+        .moon-top-left {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 120px;
+            height: 120px;
+            background-image: url('https://cdn.pixabay.com/photo/2017/10/09/19/44/full-moon-2830480_960_720.jpg');
+            background-size: cover;
+            background-position: center;
+            border-radius: 50%;
+            opacity: 0.3;
+        }
+        .moon-bottom-right {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 150px;
+            height: 150px;
+            background-image: url('https://cdn.pixabay.com/photo/2017/10/09/19/44/full-moon-2830480_960_720.jpg');
+            background-size: cover;
+            background-position: center;
+            border-radius: 50%;
+            opacity: 0.3;
+        }
+
+        /* Glassmorphism Container */
+        .container {
+            background: rgba(50, 50, 75, 0.3);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 20px 30px;
+            max-width: 900px;
+            width: 100%;
+            z-index: 1;
+            position: relative;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        h1 {
+            color: #ffffff;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        p.subtitle {
+            text-align: center;
+            font-size: 14px;
+            color: #b0b0d0;
+            margin-bottom: 20px;
+        }
+
+        /* Slide Inputs */
+        .slide-input {
+            margin-bottom: 20px;
+        }
+        .slide-input label {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #eaeaea;
+        }
+        .slide-input textarea, .slide-input input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #eaeaea;
+            font-family: 'Arial', sans-serif;
+        }
+        .slide-input textarea {
+            height: 70px;
+            resize: none;
+        }
+        .slide-input input {
+            height: 30px;
+        }
+        .slide-input textarea::placeholder, .slide-input input::placeholder {
+            color: rgba(200, 200, 200, 0.7);
+            font-style: italic;
+        }
+
+        /* Buttons */
+        .buttons {
+            text-align: center;
+            margin-top: 30px;
+        }
+        button {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: #eaeaea;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 0 10px;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        button:hover {
+            background-color: rgba(255, 255, 255, 0.4);
+            transform: scale(1.05);
+        }
+
+        /* Feedback */
+        .feedback {
+            font-size: 14px;
+            text-align: center;
+            color: #b0b0d0;
+            margin-top: 20px;
+        }
+
+        /* Footer */
+        footer {
+            margin-top: 30px;
+            font-size: 14px;
+            text-align: center;
+            color: #b0b0d0;
+        }
+        footer a {
+            text-decoration: none;
+            color: #d0d0ff;
+        }
+        footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <!-- Gambar Bulan -->
+    <div class="moon-top-left"></div>
+    <div class="moon-bottom-right"></div>
+
+    <!-- Main Content -->
+    <div class="container">
+        <h1>PPT Generator</h1>
+        <p class="subtitle">Mudah membuat presentasi PowerPoint hanya dengan memasukkan konten slide Anda!</p>
+        <form id="pptForm">
+            <!-- Dynamic slide inputs -->
+            <div id="slideContainer"></div>
+
+            <div class="buttons">
+                <button type="button" onclick="generatePPT()">Generate PPT</button>
+                <button type="button" onclick="addSlide()">Add Slide</button>
+                <button type="button" onclick="removeSlide()">Remove Slide</button>
+            </div>
+        </form>
+        <div class="feedback" id="feedback">Masukkan konten pada setiap slide dengan kreatif!</div>
+        <footer>
+            &copy; 2024 PPT Generator by Fahrul | <a href="#">Hubungi Kami</a>
+        </footer>
+    </div>
+
+    <script>
+        const maxSlides = 20;
+        const minSlides = 1;
+        let currentSlideCount = 10;
+
+        function initializeSlides() {
+            const slideContainer = document.getElementById("slideContainer");
+            slideContainer.innerHTML = ""; // Clear container
+            for (let i = 1; i <= currentSlideCount; i++) {
+                slideContainer.appendChild(createSlideInput(i));
+            }
+            updateFeedback();
+        }
+
+        function createSlideInput(number) {
+            const div = document.createElement("div");
+            div.classList.add("slide-input");
+            div.id = `slideDiv${number}`;
+            div.innerHTML = `
+                <label for="slide${number}">Slide ${number} - Judul</label>
+                <input type="text" id="slideTitle${number}" placeholder="Masukkan judul slide">
+                <label for="slide${number}">Isi Slide ${number}</label>
+                <textarea id="slide${number}" placeholder="Masukkan teks motivasi atau konten di sini..."></textarea>
+            `;
+            return div;
+        }
+
+        function addSlide() {
+            if (currentSlideCount < maxSlides) {
+                currentSlideCount++;
+                const slideContainer = document.getElementById("slideContainer");
+                slideContainer.appendChild(createSlideInput(currentSlideCount));
+                updateFeedback();
+            } else {
+                alert("Maksimal 20 slide!");
+            }
+        }
+
+        function removeSlide() {
+            if (currentSlideCount > minSlides) {
+                const slideContainer = document.getElementById("slideContainer");
+                const lastSlide = document.getElementById(`slideDiv${currentSlideCount}`);
+                if (lastSlide) {
+                    slideContainer.removeChild(lastSlide);
+                }
+                currentSlideCount--;
+                updateFeedback();
+            } else {
+                alert("Minimal 1 slide!");
+            }
+        }
+
+        function generatePPT() {
+            const slides = [];
+            for (let i = 1; i <= currentSlideCount; i++) {
+                const title = document.getElementById(`slideTitle${i}`).value.trim();
+                const content = document.getElementById(`slide${i}`).value.trim();
+                if (title || content) {
+                    slides.push({ title: title, content: content });
+                }
+            }
+
+            fetch('/generate-ppt', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ slides: slides })
+            })
+            .then(response => response.blob())
+            .then(blob => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = 'generated_ppt.pptx';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                alert('PPT berhasil diunduh!');
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Terjadi kesalahan saat mengunduh PPT');
+            });
+        }
+
+        function updateFeedback() {
+            const feedback = document.getElementById("feedback");
+            feedback.textContent = `Anda sedang menggunakan ${currentSlideCount} dari maksimal ${maxSlides} slide.`;
+        }
+
+        initializeSlides();
+    </script>
+</body>
+</html>
 
